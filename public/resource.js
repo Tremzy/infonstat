@@ -1,17 +1,16 @@
+export function showMessageDialog(title, description) {
+    document.querySelector(".ol-title").innerHTML = title;
+    document.querySelector(".ol-description").innerHTML = description;
+    document.querySelector(".overlay-background").classList.add("visible");
+}
+
+export function closeMessageDialog() {
+    document.querySelector(".overlay-background").classList.remove("visible");
+}
+
 import "./chart.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    function showMessageDialog(title, description) {
-        document.querySelector(".ol-title").innerHTML = title;
-        document.querySelector(".ol-description").innerHTML = description;
-        document.querySelector(".overlay-background").classList.add("visible");
-    }
-
-    function closeMessageDialog() {
-        document.querySelector(".overlay-background").classList.remove("visible");
-    }
-
     async function checkOS() {
         const res = await fetch("/api/platform")
         const data = await res.json();

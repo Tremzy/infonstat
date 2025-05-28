@@ -18,6 +18,7 @@ body {
     padding: 1rem;
     text-decoration: none;
     transition: background-color 0.3s ease;
+    width: 100%;
 }
 .sidebar a:hover {
     background-color: #00b44b;
@@ -124,7 +125,7 @@ button {
     background-color: #fff;
     border-radius: 0.5rem;
     box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
-    height: 35%;
+    min-height: 35%;
     margin: auto;
     padding: 0.5rem;
     justify-content: center;
@@ -132,6 +133,7 @@ button {
     display: flex;
     flex-direction: column;
     position: relative;
+    max-width: 60%;
 }
 
 .close-ol {
@@ -177,4 +179,19 @@ button {
 .overlay-menu hr {
     width: 75%;
     border: 1px solid #000;
+}
+
+.overlay-menu table {
+    width: 60%;
+    margin: auto;
+}
+
+.overlay-menu table thead th {
+    background-color: #00b44b;
+    font-size: 24px;
+    text-decoration: none;
+}
+
+.overlay-menu table tr:nth-child(odd) {
+    background-color: rgba(0, 0, 0, 0.1);
 }
