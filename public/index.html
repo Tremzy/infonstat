@@ -13,14 +13,14 @@
 <body>
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-1 sidebar" id="nbl">
+            <nav class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 sidebar d-flex flex-column align-items-start pt-3 min-vh-100" id="nbl">
                 <a href="index.html" class="navlink">Dashboard</a>
                 <a href="perf.html" class="navlink">Performance</a>
                 <a href="#" class="navlink">Services</a>
                 <a href="#" class="navlink">Logs</a>
                 <a href="#" class="navlink">Settings</a>
             </nav>
-            <main class="col-md-11 content">
+            <main class="col py-3">
                 <div id="app" data-page="dashboard">
                     <h1 class="mb-4">🖥️ Info 'n Stat Maintenance Dashboard</h1>
                     <h2>Performance</h2>
@@ -46,6 +46,14 @@
                     </div>
                 </div>
             </main>
+        </div>
+    </div>
+    <div class="overlay-background">
+        <div class="overlay-menu col-lg-6 col-md-8">
+            <button class="close-ol">✕</button>
+            <div class="ol-title"></div>
+            <hr>
+            <div class="ol-description"></div>
         </div>
     </div>
 </body>

@@ -1,6 +1,27 @@
 import "./chart.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    function showMessageDialog(title, description) {
+        document.querySelector(".ol-title").innerHTML = title;
+        document.querySelector(".ol-description").innerHTML = description;
+        document.querySelector(".overlay-background").classList.add("visible");
+    }
+
+    function closeMessageDialog() {
+        document.querySelector(".overlay-background").classList.remove("visible");
+    }
+
+    async function checkOS() {
+        const res = await fetch("/api/platform")
+        const data = await res.json();
+        const os = data.userOS;
+        console.log(os)
+        if (os != "linux") {
+            showMessageDialog("Unsupported OS", "You are using an <b>unsupported operating system</b>. This tool was made for <b>unix-like</b> (linux) systems. Some features <b>wont work</b> properly");
+        }
+    }
+
     async function loadPerformance() {
         const currentPage = document.getElementById("app").dataset.page;
 
@@ -98,6 +119,13 @@ document.addEventListener("DOMContentLoaded", () => {
         loadServices();
     }
 
+    document.addEventListener("click", (e)=>{
+        if (e.target && e.target.matches(".close-ol")){
+            closeMessageDialog();
+        }
+    })
+
+    checkOS();
     setInterval(loadPerformance, 1000);
     setInterval(loadServices, 3000);
 });

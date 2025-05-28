@@ -12,15 +12,15 @@
 </head>
 <body>
     <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-1 sidebar" id="nbl">
+        <div class="row flex-nowrap">
+            <nav class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 sidebar d-flex flex-column align-items-start pt-3 min-vh-100" id="nbl">
                 <a href="index.html" class="navlink">Dashboard</a>
                 <a href="perf.html" class="navlink">Performance</a>
                 <a href="#" class="navlink">Services</a>
                 <a href="#" class="navlink">Logs</a>
                 <a href="#" class="navlink">Settings</a>
             </nav>
-            <main class="col-md-11 content">
+            <main class="col py-3">
                 <div id="app" data-page="performance">
                     <div class="row align-items-center mb-3">
                         <div class="col-md-8">
@@ -46,6 +46,14 @@
                     </div>
                 </div>
             </main>
+        </div>
+    </div>
+    <div class="overlay-background">
+        <div class="overlay-menu">
+            <button class="close-ol">✕</button>
+            <div class="ol-title"></div>
+            <hr>
+            <div class="ol-description"></div>
         </div>
     </div>
 </body>

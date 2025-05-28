@@ -78,9 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.addEventListener("click", (e)=>{
-        if (e.target && e.target.matches("#pauseBtn"))
-        preventUpdate = !preventUpdate;
-        console.log("prevented update!!! ", preventUpdate);
+        if (e.target && e.target.matches("#pauseBtn")){
+            preventUpdate = !preventUpdate;
+            console.log("prevented update!!! ", preventUpdate);
+        }
     })
 
     updateChart();

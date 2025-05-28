@@ -1,11 +1,15 @@
 const express = require('express');
 const { exec, execSync } = require('child_process');
 const os = require('os');
+const { platform } = require('node:process');
 
 const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
+app.get("/api/platform", (req, res) => {
+  res.json({ userOS: platform });
+});
 
 app.get('/api/performance', (req, res) => {
   const cpus = os.cpus();
