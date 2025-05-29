@@ -45,11 +45,12 @@ app.get('/api/performance', (req, res) => {
 });
 
 app.get('/api/services', (req, res) => {
-    exec('systemctl list-units --type=service --no-pager --no-legend', (err, stdout) => {
+    exec('systemctl list-units --type=service -all --no-pager --no-legend', (err, stdout) => {
         if (err) return res.status(500).json({
             error: err.message
         });
-        const lines = stdout.trim().split('\n');
+        const blacklist = ["systemd", "not-found", "emergency", "swap", "container", "dev-"];
+        const lines = stdout.trim().split('\n').filter(line => !blacklist.some(kw => line.includes(kw)));
         const services = lines.map(line => {
             const parts = line.trim().split(/\s+/);
             return {
@@ -130,20 +131,19 @@ setInterval(() => {
     const timestamp = Date.now();
     const cpu = getCpuUsagePercent();
 
-    exec("ps -eo pid,comm,%cpu --sort=-%cpu | head -n 7", (err, stdout, stderr) => {
+    exec("pidstat -u -h 1 1", (err, stdout, stderr) => {
         if (err) {
             console.error("Error running ps:", err);
             return;
         }
-        const lines = stdout.split("\n").slice(1).filter(line => line.trim() !== "").filter(line => !line.includes("ps"));
+        const lines = stdout.split("\n").slice(3).filter(line => line.trim() !== "" && !line.trim().includes("pidstat"));
         const procList = lines.map(line => {
-            const parts = line.trim().split(" ");
+            const parts = line.trim().split(" ").filter(p => p != "");
             const tokens = [];
-            for (const part of parts) {
-                if (part !== "") tokens.push(part);
-            }
+            tokens.push(parts[2], parts[9], parts[7])
             return tokens;
-        });
+        }).sort((a, b) => parseFloat(b[2]) - parseFloat(a[2])).slice(0, 6);
+
 
         memoryHistory.push({
             timestamp,
@@ -153,9 +153,10 @@ setInterval(() => {
             procList
         });
 
+
         if (memoryHistory.length > 40) memoryHistory.shift();
     });
-}, 1000);
+}, 1500);
 
 app.get("/api/memory-history", (req, res) => {
     res.json(memoryHistory);

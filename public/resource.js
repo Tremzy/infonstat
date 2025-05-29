@@ -102,11 +102,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${svc.name}</td>
                 <td>${svc.active}/${svc.sub}</td>
                 <td class="user-select-none">
-                    <button class="btn btn-sm btn-success" onclick="controlService('${svc.name}', 'start')">Start</button>
-                    <button class="btn btn-sm btn-danger" onclick="controlService('${svc.name}', 'stop')">Stop</button>
-                    <button class="btn btn-sm btn-warning" onclick="controlService('${svc.name}', 'restart')">Restart</button>
+                    <button class="btn btn-sm btn-success">Start</button>
+                    <button class="btn btn-sm btn-danger">Stop</button>
+                    <button class="btn btn-sm btn-warning">Restart</button>
                 </td>
             `;
+            const startBtn = row.querySelector(".btn-success");
+            startBtn.addEventListener("click", () => controlService(svc.name, "start"));
+
+            const stopBtn = row.querySelector(".btn-danger");
+            stopBtn.addEventListener("click", () => controlService(svc.name, "stop"));
+
+            const restartBtn = row.querySelector(".btn-warning");
+            restartBtn.addEventListener("click", () => controlService(svc.name, "restart"));
             tbody.appendChild(row);
         });
     }
@@ -114,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function controlService(name, action) {
         const res = await fetch(`/api/service/${name}/${action}`, { method: "POST" });
         const result = await res.json();
-        alert(result.status || result.error);
+        showMessageDialog("Success!", `Successfully ${action}ed ${name}`);
         loadServices();
     }
 

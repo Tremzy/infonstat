@@ -19,7 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const cpu = data.map(d => d.cpu);
         const total = data.map(t => Math.round(t.total / 1024 / 1024));
         procList = data.map(p => p.procList);
-
+        window.procList = data.map(p => p.procList);
+        console.log(procList)
         if (window.chart && window.chart.canvas !== canvas) {
             window.chart.destroy();
             window.chart = null;
@@ -78,9 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     onClick: (event, elements, chart) => {
                         if (elements[0]) {
                             const i = elements[0].index;
-                            console.log(i)
-                            console.log(procList.length)
-                            if (!procList[i]) {
+                            console.log("Chart time:", chart.data.labels[i], "Top process:", window.procList[i]);
+
+                            if (!window.procList[i]) {
                                 console.warn(`No process list data for index ${i}`);
                                 return; // exit early if no data
                             }
@@ -95,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     </thead>
                                     <tbody>
                             `;
-                            procList[i].forEach(e => {
+                            window.procList[i].forEach(e => {
                                 messageText += `
                                 <tr>
                                     <td>${e[0]}</td>
@@ -136,6 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
 
     updateChart();
-    setInterval(updateChart, 1000);
+    setInterval(updateChart, 1500);
     window.updateChart = updateChart;
 });

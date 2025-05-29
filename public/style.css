@@ -125,7 +125,6 @@ button {
     background-color: #fff;
     border-radius: 0.5rem;
     box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
-    min-height: 35%;
     margin: auto;
     padding: 0.5rem;
     justify-content: center;
@@ -134,6 +133,8 @@ button {
     flex-direction: column;
     position: relative;
     max-width: 60%;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }
 
 .close-ol {
