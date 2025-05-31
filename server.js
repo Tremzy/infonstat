@@ -1,12 +1,16 @@
 const express = require('express');
 const {
     exec,
-    execSync
+    execSync,
+    spawn
 } = require('child_process');
 const os = require('os');
 const {
     platform
 } = require('node:process');
+
+const fs = require('fs');
+const { decode } = require('node:punycode');
 
 const app = express();
 app.use(express.json());
@@ -126,12 +130,8 @@ function getCpuUsagePercent() {
 
 
 setInterval(() => {
-    const used = os.totalmem() - os.freemem();
-    const total = os.totalmem();
-    const timestamp = Date.now();
-    const cpu = getCpuUsagePercent();
-
     exec("pidstat -u -h 1 1", (err, stdout, stderr) => {
+        const cpu = getCpuUsagePercent();
         if (err) {
             console.error("Error running ps:", err);
             return;
@@ -144,6 +144,9 @@ setInterval(() => {
             return tokens;
         }).sort((a, b) => parseFloat(b[2]) - parseFloat(a[2])).slice(0, 6);
 
+        const used = os.totalmem() - os.freemem();
+        const total = os.totalmem();
+        const timestamp = Date.now();
 
         memoryHistory.push({
             timestamp,
@@ -161,6 +164,89 @@ setInterval(() => {
 app.get("/api/memory-history", (req, res) => {
     res.json(memoryHistory);
 });
+
+app.get("/api/logs/", (req, res) => {
+    const logPath = decodeURIComponent(req.query.path);
+    if (!logPath || logPath.includes("..")) {
+        res.status(400).send("Invalid path");
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const tail = spawn("tail", ["-n", "20", "-f", logPath]);
+
+    tail.stdout.on("data", (data) => {
+        console.log("Tail chunk:", data.toString().length);
+        res.write(`data: ${data.toString().replaceAll("\n", "\\n")}\n\n`);
+    })
+
+    tail.stderr.on('data', (data) => {
+        console.error('Tail error:', data.toString());
+    });
+
+    req.on("close", () => {
+        tail.kill()
+        res.end();
+    });
+})
+
+app.post("/api/addlog/", (req, res) => {
+    const logname = decodeURIComponent(req.query.name);
+    const logpath = decodeURIComponent(req.query.path);
+
+    if (!fs.existsSync(logpath)) {
+        return res.status(400).send("Invalid path");
+    }
+
+    const logsJson = "./public/logs.json";
+    let logs = {};
+
+    if (fs.existsSync(logsJson)) {
+        try {
+            const data = fs.readFileSync(logsJson, "utf-8");
+            logs = JSON.parse(data || "{}");
+        } catch (err) {
+            return res.status(500).send("Failed to read or parse logs.json");
+        }
+    }
+
+    logs[logname] = logpath;
+
+    fs.writeFile(logsJson, JSON.stringify(logs, null, 4), (err) => {
+        if (err) {
+            return res.status(500).send("Error while writing to logs.json");
+        }
+        return res.status(200).send("Log added successfully");
+    });
+})
+
+app.post("/api/deletelog/:name", (req, res) => {
+    const logname = decodeURIComponent(req.params.name);
+
+    const logsJson = "./public/logs.json";
+    let logs = {}
+
+    if (fs.existsSync(logsJson)) {
+        try {
+            const data = fs.readFileSync(logsJson, "utf-8");
+            logs = JSON.parse(data || "{}");
+        } catch (err) {
+            return res.status(500).send("Failed to read or parse logs.json");
+        }
+    }
+
+    delete logs[logname];
+
+    fs.writeFile(logsJson, JSON.stringify(logs, null, 4), (err) => {
+        if (err) {
+            return res.status(500).send("Error while writing to logs.json");
+        }
+        return res.status(200).send("Log deleted successfully");
+    });
+})
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
