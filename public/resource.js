@@ -5,10 +5,17 @@ export function showMessageDialog(title, description) {
 }
 
 export function closeMessageDialog() {
-    document.querySelector(".overlay-background").classList.remove("visible");
+    const ov_bg = document.querySelector(".overlay-background");
+    ov_bg.classList.remove("visible");
+    const ov_desc = document.querySelector(".ol-description");
+    ov_desc.className = "ol-description";
+    ov_desc.innerHTML = "";
 }
 
 import "./chart.js";
+
+window.prevIndex = 0;
+let eventSource = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     async function checkOS() {
@@ -126,12 +133,128 @@ document.addEventListener("DOMContentLoaded", () => {
         loadServices();
     }
 
-    document.addEventListener("click", (e)=>{
+    async function updateLogSelector() { 
+        const logSelector = document.getElementById("log-selector");
+        const res = await fetch("./logs.json");
+        const data = await res.json();
+
+        logSelector.innerHTML = "";
+        for (const [name, path] of Object.entries(data)) {
+            const option = document.createElement("option");
+            option.setAttribute("value", path);
+            option.innerText = name;
+            logSelector.appendChild(option)
+        }
+
+        fetchLog(logSelector.children[0].getAttribute("value"));
+    }
+
+    async function deleteLogEntry() {
+        const selector = document.getElementById("log-selector");
+        const selectedLogName = selector.children[selector.selectedIndex].textContent;
+        const res = await fetch(`/api/deletelog/${encodeURIComponent(selectedLogName)}`, { method: "POST" })
+        if (res.status == 200) {
+            showMessageDialog("Success!", `Successfully deleted "${selectedLogName}" log`);
+        }
+        else {
+            showMessageDialog("Error", `Couldnt delete "${selectedLogName}" log`);
+        }
+    }
+
+    async function addLogEntry() {
+        document.querySelector(".overlay-background").classList.add("visible");
+        document.querySelector(".ol-title").innerHTML = "Add new log entry";
+        const ol_desc = document.querySelector(".ol-description");
+        ol_desc.classList.add("d-flex", "flex-column");
+
+        const lognameinput = document.createElement("input");
+        lognameinput.type = "text";
+        lognameinput.placeholder = "My log 1";
+        lognameinput.id = "add-log-name";
+        lognameinput.classList.add("p-2", "my-2", "rounded", "fs-5", "border", "border-secondary");
+
+        const logpath = document.createElement("input");
+        logpath.type = "text";
+        logpath.placeholder = "/var/log/mylog";
+        logpath.id = "add-log-path";
+        logpath.classList.add("p-2", "my-2", "rounded", "fs-5", "border", "border-secondary");
+
+        const submit = document.createElement("input");
+        submit.type = "submit";
+        submit.id = "log-add-submit";
+        submit.classList.add("my-4", "btn", "btn-outline-primary");
+
+        ol_desc.appendChild(lognameinput);
+        ol_desc.appendChild(logpath);
+        ol_desc.appendChild(submit);
+    }
+
+    async function fetchLog(logPath) {
+        const logOutput = document.getElementById("log-output");
+        logOutput.innerText = "";
+        document.getElementById("log-path-display").innerText = logPath;
+        if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+
+        eventSource = new EventSource(`/api/logs?path=${encodeURIComponent(logPath)}`);
+        eventSource.onmessage = (event) => {
+            console.log("Received log line:", event.data);
+            const decoded = event.data.replaceAll("\\n", "\n")
+            logOutput.textContent += `${decoded}\n`;
+            const maxlines = 255;
+            const lines = logOutput.textContent.split("\n");
+            if (lines.length > maxlines) {
+                logOutput.textContent = lines.slice(lines.length - maxlines).join("\n");
+            }
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+        eventSource.onerror = (err) => {
+            console.error(`Eventsource error: ${err}`);
+            eventSource.close();
+        }
+    }
+
+    document.addEventListener("click", async (e)=>{
         if (e.target && e.target.matches(".close-ol")){
             closeMessageDialog();
         }
+        else if (e.target && e.target.matches("#log-selector")) {
+            if (e.target.selectedIndex != window.prevIndex) {
+                const selectedElementValue = e.target.children[e.target.selectedIndex].getAttribute("value");
+                console.log(selectedElementValue)
+                fetchLog(selectedElementValue);
+                window.prevIndex = e.target.selectedIndex;
+            }
+        }
+        else if (e.target && e.target.matches("#add-log-entry")) {
+            addLogEntry();
+        }
+        else if (e.target && e.target.matches("#log-add-submit")) {
+            console.log("sending data")
+            const newlogname = document.getElementById("add-log-name").value;
+            const newlogpath = document.getElementById("add-log-path").value;
+            
+            const res = await fetch(`/api/addlog?name=${encodeURIComponent(newlogname)}&path=${encodeURIComponent(newlogpath)}`, { method: "POST" });
+            if (res.status == 200) {
+                closeMessageDialog();
+                showMessageDialog("Success!", "Successfully added new log tracking");
+                updateLogSelector();
+            }
+            else if (res.status == 400) {
+                closeMessageDialog();
+                showMessageDialog("Error", "Provided path does not exist");
+            }
+        }
+        else if (e.target && e.target.matches("#del-log-entry")) {
+            deleteLogEntry();
+            updateLogSelector();
+        }
     })
 
+    updateLogSelector();
+    window.updateLogSelector = updateLogSelector;
     checkOS();
     setInterval(loadPerformance, 1000);
     setInterval(loadServices, 3000);

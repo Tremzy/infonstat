@@ -52,6 +52,11 @@ function routePage(ref, pushHistory = true) {
                     }
                 }, 100);
             }
+            else if (currentPage === "log") {
+                if (typeof window.updateLogSelector === "function") {
+                    window.updateLogSelector()
+                }
+            }
         })
 
         if (pushHistory) {
