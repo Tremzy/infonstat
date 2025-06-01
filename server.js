@@ -159,7 +159,7 @@ setInterval(() => {
 
         if (memoryHistory.length > 40) memoryHistory.shift();
     });
-}, 1500);
+}, 1000);
 
 app.get("/api/memory-history", (req, res) => {
     res.json(memoryHistory);
@@ -246,6 +246,41 @@ app.post("/api/deletelog/:name", (req, res) => {
         }
         return res.status(200).send("Log deleted successfully");
     });
+})
+
+app.get("/api/getsettings/", (req, res) => {
+    const settingsJson = "./public/settings.json";
+
+    if (fs.existsSync(settingsJson)) {
+        try {
+            const data = fs.readFileSync(settingsJson, "utf-8");
+            const settings = JSON.parse(data || "{}");
+            return res.json(settings);
+        }
+        catch (err) {
+            return res.status(500).send("Failed to read settings.json");
+        }
+    }
+    else {
+        return res.status(404).send("settings.json does not exist");
+    }
+})
+
+app.post("/api/setsettings", (req, res) => {
+    const settingsData = req.body;
+    const settingsJson = "./public/settings.json";
+
+    if (fs.existsSync(settingsJson)) {
+        fs.writeFile(settingsJson, JSON.stringify(settingsData, null, 4), (err) => {
+            if (err) {
+                return res.status(500).send("Couldnt overwrite settings.json");
+            }
+            return res.status(200).send("Successfully saved config");
+        });
+    }
+    else {
+        return res.status(404).send("settings.json does not exist");
+    }
 })
 
 const PORT = 3000;

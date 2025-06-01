@@ -1,9 +1,3 @@
-export function showMessageDialog(title, description) {
-    document.querySelector(".ol-title").innerHTML = title;
-    document.querySelector(".ol-description").innerHTML = description;
-    document.querySelector(".overlay-background").classList.add("visible");
-}
-
 export function closeMessageDialog() {
     const ov_bg = document.querySelector(".overlay-background");
     ov_bg.classList.remove("visible");
@@ -12,12 +6,36 @@ export function closeMessageDialog() {
     ov_desc.innerHTML = "";
 }
 
+export function showMessageDialog(title, description) {
+    closeMessageDialog();
+    document.querySelector(".ol-title").innerHTML = title;
+    document.querySelector(".ol-description").innerHTML = description;
+    document.querySelector(".overlay-background").classList.add("visible");
+}
+
 import "./chart.js";
 
 window.prevIndex = 0;
 let eventSource = null;
+let settings = {};
 
-document.addEventListener("DOMContentLoaded", () => {
+export async function loadSettings() {
+    const res = await fetch("/api/getsettings");
+    settings = await res.json();
+}
+
+export function getSettings() {
+    return settings;
+}
+
+window.loadSettings = loadSettings;
+window.getSettings = getSettings;
+
+document.addEventListener("DOMContentLoaded", async () => {
+    /*
+    await loadSettings();
+    settings = getSettings();
+    */
     async function checkOS() {
         const res = await fetch("/api/platform")
         const data = await res.json();
@@ -30,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadPerformance() {
         const currentPage = document.getElementById("app").dataset.page;
-
         const res = await fetch("/api/performance");
         const data = await res.json();
 
@@ -56,9 +73,9 @@ document.addEventListener("DOMContentLoaded", () => {
             avgCpuLoadDiv.textContent = `Average CPU load: ${avgCpuLoad.toFixed(1)}%`;
             avgCpuLoadDiv.className = "mt-2 fs-4";
 
-            if (avgCpuLoad > 75) {
+            if (avgCpuLoad > settings["dangerousCpuUsage"]) {
                 avgCpuLoadDiv.classList.add("text-danger");
-            } else if (avgCpuLoad > 50) {
+            } else if (avgCpuLoad > settings["cautiousCpuUsage"]) {
                 avgCpuLoadDiv.classList.add("text-warning");
             } else {
                 avgCpuLoadDiv.classList.add("text-success");
@@ -68,9 +85,9 @@ document.addEventListener("DOMContentLoaded", () => {
             ramDiv.textContent = `Memory (RAM) usage: ${(data.memoryUsage.used / 1024 / 1024).toFixed(0)} MB`;
             ramDiv.className = "fs-5";
 
-            if (ramPercent > 75) {
+            if (ramPercent > settings["dangerousRamUsage"]) {
                 ramDiv.classList.add("text-danger");
-            } else if (ramPercent > 50) {
+            } else if (ramPercent > settings["cautiousRamUsage"]) {
                 ramDiv.classList.add("text-warning");
             } else {
                 ramDiv.classList.add("text-success");
@@ -202,8 +219,8 @@ document.addEventListener("DOMContentLoaded", () => {
         eventSource.onmessage = (event) => {
             console.log("Received log line:", event.data);
             const decoded = event.data.replaceAll("\\n", "\n")
-            logOutput.textContent += `${decoded}\n`;
-            const maxlines = 255;
+            logOutput.textContent += `${decoded}`;
+            const maxlines = settings["logOutputBuffer"];
             const lines = logOutput.textContent.split("\n");
             if (lines.length > maxlines) {
                 logOutput.textContent = lines.slice(lines.length - maxlines).join("\n");
@@ -213,6 +230,104 @@ document.addEventListener("DOMContentLoaded", () => {
         eventSource.onerror = (err) => {
             console.error(`Eventsource error: ${err}`);
             eventSource.close();
+        }
+    }
+
+    async function fetchSettings() {
+        const res = await fetch("/api/getsettings");
+        const data = await res.json();
+        settings = data;
+
+        try {
+            for (const key in data) {
+                console.log(`key: ${key}\nwindow theme: ${window.theme}\ndata[key]: ${data[key]}`)
+                const element = document.getElementById(key);
+                if (element) {
+                    if (element.tagName == "SELECT") {
+                        element.value = data[key];
+                    }
+                    else {
+                        element.value = data[key];
+                    }
+                }
+                else {
+                    if (key == "theme") {
+                        if (window.theme != data[key]) {
+                            switchTheme(data[key]);
+                            window.theme = data[key];
+                            document.getElementById("themeSwitch").checked = window.theme == "dark" ? true : false;
+                            console.log("fetched theme: ", window.theme)
+                        }
+                    }
+                }
+            }
+        }
+        catch(err) {
+            //ignore
+        }
+    }
+
+    function switchTheme(mode) {
+        const htmlBody = document.querySelector("body");
+        const currentmode = htmlBody.classList.contains("dark-mode");
+        console.log("currentmode: ", currentmode)
+        console.log("givenmode: ", mode)
+        if (mode == "dark" && !currentmode) {
+            htmlBody.classList.add("dark-mode");
+        }
+        else {
+            htmlBody.classList.remove("dark-mode")
+        }
+        if (window.chart) {
+            if (mode == "dark" && !currentmode) {
+                window.chart.options.scales.y.grid.color = "rgba(224, 224, 224, 0.405)";
+                window.chart.options.scales.x.grid.color = "rgba(224, 224, 224, 0.405)";
+                window.chart.options.scales.y1.grid.color = "rgba(224, 224, 224, 0.405)";
+
+                window.chart.options.scales.y.ticks.color = "#fff";
+                window.chart.options.scales.x.ticks.color = "#fff";
+                window.chart.options.scales.y1.ticks.color = "#fff";
+
+                window.chart.update();
+            }
+            else {
+                window.chart.options.scales.y.grid.color = "rgba(56, 56, 56, 0.405)";
+                window.chart.options.scales.x.grid.color = "rgba(56, 56, 56, 0.405)";
+                window.chart.options.scales.y1.grid.color = "rgba(56, 56, 56, 0.405)";
+
+                window.chart.options.scales.y.ticks.color = "#434343";
+                window.chart.options.scales.x.ticks.color = "#434343";
+                window.chart.options.scales.y1.ticks.color = "#434343";
+
+                window.chart.update();
+            }
+        }
+    }
+
+    async function saveSettings() {
+        const data = {}
+        const inputs = document.getElementById("settings-form").querySelectorAll("input, select");
+
+        inputs.forEach(input => {
+            data[input.id] = input.value;
+        });
+
+        data["theme"] = window.theme ? window.theme : "light";
+        console.log(`data[theme]: ${data["theme"]}\nwindow.theme: ${window.theme}`);
+
+        const res = await fetch("/api/setsettings", { 
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (res.status == 200) {
+            showMessageDialog("Success!", "Successfully saved settings!");
+        }
+        else {
+            showMessageDialog("Error", "An error occured while trying to save");
         }
     }
 
@@ -238,12 +353,10 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const res = await fetch(`/api/addlog?name=${encodeURIComponent(newlogname)}&path=${encodeURIComponent(newlogpath)}`, { method: "POST" });
             if (res.status == 200) {
-                closeMessageDialog();
                 showMessageDialog("Success!", "Successfully added new log tracking");
                 updateLogSelector();
             }
             else if (res.status == 400) {
-                closeMessageDialog();
                 showMessageDialog("Error", "Provided path does not exist");
             }
         }
@@ -251,9 +364,26 @@ document.addEventListener("DOMContentLoaded", () => {
             deleteLogEntry();
             updateLogSelector();
         }
+        else if (e.target && e.target.matches("#save-form-settings")) {
+            e.preventDefault();
+            saveSettings();
+        }
+        else if (e.target && e.target.matches("#themeSwitch")) {
+            const htmlBody = document.querySelector("body");
+            htmlBody.classList.contains("dark-mode") ? window.theme = "light" : window.theme = "dark";
+            console.log(htmlBody.classList.contains("dark-mode"))
+            console.log(window.theme)
+            switchTheme(window.theme);
+        }
     })
+    
+    
+    //IMPORTANT!!!
+    fetchSettings();
+    window.fetchSettings = fetchSettings;
 
-    updateLogSelector();
+    const currentPage = document.getElementById("app").dataset.page;
+    if ( currentPage == "log" ) updateLogSelector();
     window.updateLogSelector = updateLogSelector;
     checkOS();
     setInterval(loadPerformance, 1000);

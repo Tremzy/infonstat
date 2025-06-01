@@ -1,5 +1,6 @@
 {
     "index.html": "dashboard",
     "perf.html": "performance",
-    "log.html": "log"
+    "log.html": "log",
+    "settings.html": "settings"
 }

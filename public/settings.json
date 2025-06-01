@@ -1,0 +1,10 @@
+{
+    "chartUpdateDelay": 1500,
+    "logOutputBuffer": 255,
+    "cautiousCpuUsage": 50,
+    "dangerousCpuUsage": 75,
+    "cautiousRamUsage": 50,
+    "dangerousRamUsage": 75,
+    "chartRamScale": "MB",
+    "theme": "light"
+}

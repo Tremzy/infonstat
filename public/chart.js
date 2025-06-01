@@ -1,26 +1,50 @@
-import { showMessageDialog, closeMessageDialog } from "./resource.js";
+import { showMessageDialog, getSettings, loadSettings } from "./resource.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     let chart;
     let preventUpdate = false;
     let procList = [];
+    let settings = {}
     async function updateChart() {
+        await loadSettings();
+        settings = getSettings();
+
         if (preventUpdate) return;
         const currentPage = document.getElementById("app")?.dataset.page;
         if (currentPage != "performance") return;
-        console.log("received call")
         const canvas = document.getElementById("memoryChart");
         const ctx = document.getElementById("memoryChart")?.getContext("2d");
         const res = await fetch("/api/memory-history");
         const data = await res.json();
 
+        console.log("settings: ", settings)
         const labels = data.map(d => new Date(d.timestamp).toLocaleTimeString());
-        const used = data.map(entry => (entry.used / 1024 / 1024).toFixed(2));
         const cpu = data.map(d => d.cpu);
-        const total = data.map(t => Math.round(t.total / 1024 / 1024));
+
+        let total;
+        if (settings["chartRamScale"] == "MB") {
+            total = data.map(t => Math.round(t.total / 1024 / 1024));
+        }
+        else if (settings["chartRamScale"] == "GB") {
+            total = data.map(t => Math.round(t.total / 1024 / 1024 / 1024));
+        }
+        else {
+            total = data.map(t => 100);
+        }
+
+        let used;
+        if (settings["chartRamScale"] == "MB") {
+            used = data.map(entry => (entry.used / 1024 / 1024).toFixed(2));
+        }
+        else if (settings["chartRamScale"] == "GB") {
+            used = data.map(entry => (entry.used / 1024 / 1024 / 1024).toFixed(2));
+        }
+        else {
+            used = data.map(entry => ((entry.used / entry.total) * 100).toFixed(2));
+        }
+
         procList = data.map(p => p.procList);
         window.procList = data.map(p => p.procList);
-        console.log(procList)
         if (window.chart && window.chart.canvas !== canvas) {
             window.chart.destroy();
             window.chart = null;
@@ -33,7 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     labels,
                     datasets: [
                         {
-                            label: "Memory (MB)",
+                            //label: "Memory (MB)",
+                            label: settings["chartRamScale"] == "MB" ? "Memory (MB)" : settings["chartRamScale"] == "GB" ? "Memory (GB)" : "Memory (%)",
                             data: used,
                             borderColor: "blue",
                             backgroundColor: "rgba(0,0,255,0.1)",
@@ -58,11 +83,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: Math.ceil(total[0] / 1000) * 1000,
+                            max: settings["chartRamScale"] == "MB" ? Math.ceil(total[0] / 1000) * 1000 : settings["chartRamScale"] == "GB" ? total[0] : 100,
                             ticks: {
+                                color: "#434343",
                                 callback: function(value) {
-                                    return value + " MB";
+                                    return settings["chartRamScale"] == "MB" ? value + "MB" : settings["chartRamScale"] == "GB" ? value + "GB" : value + "%";
                                 }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: "#434343",
                             }
                         },
                         y1: {
@@ -70,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             max: 100,
                             position: "right",
                             ticks: {
+                                color: "#434343",
                                 callback: function(value) {
                                     return value + "%";
                                 }
@@ -79,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     onClick: (event, elements, chart) => {
                         if (elements[0]) {
                             const i = elements[0].index;
-                            console.log("Chart time:", chart.data.labels[i], "Top process:", window.procList[i]);
 
                             if (!window.procList[i]) {
                                 console.warn(`No process list data for index ${i}`);
@@ -112,10 +143,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
             });
         } else if (window.chart) {
+            console.log(window.theme)
             window.chart.data.labels = labels;
             window.chart.data.datasets[0].data = used;
             window.chart.data.datasets[1].data = cpu;
             window.chart.update();
+        }
+        if (window.theme) {
+            if (window.theme == "dark") {
+                window.chart.options.scales.y.grid.color = "rgba(224, 224, 224, 0.405)";
+                window.chart.options.scales.x.grid.color = "rgba(224, 224, 224, 0.405)";
+                window.chart.options.scales.y1.grid.color = "rgba(224, 224, 224, 0.405)";
+
+                window.chart.options.scales.y.ticks.color = "#fff";
+                window.chart.options.scales.x.ticks.color = "#fff";
+                window.chart.options.scales.y1.ticks.color = "#fff";
+                window.chart.update();
+            }
+            else {
+                window.chart.options.scales.y.grid.color = "rgba(56, 56, 56, 0.405)";
+                window.chart.options.scales.x.grid.color = "rgba(56, 56, 56, 0.405)";
+                window.chart.options.scales.y1.grid.color = "rgba(56, 56, 56, 0.405)";
+                
+                window.chart.options.scales.y.ticks.color = "#434343";
+                window.chart.options.scales.x.ticks.color = "#434343";
+                window.chart.options.scales.y1.ticks.color = "#434343";
+
+                window.chart.update();
+            }
         }
     }
 
@@ -132,11 +187,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 e.target.innerText = "Pause"
             }
             preventUpdate = !preventUpdate;
-            console.log("prevented update!!! ", preventUpdate);
         }
     })
 
+    await loadSettings();
+    settings = getSettings();
     updateChart();
-    setInterval(updateChart, 1500);
+    setInterval(updateChart, settings["chartUpdateDelay"]);
     window.updateChart = updateChart;
 });

@@ -5,12 +5,56 @@ body {
     font-family: monospace;
     min-height: 100vh;
     overflow-x: hidden;
+    transition: color 0.3s ease, background-color 0.3s ease-in-out;
 }
+
+* {
+    max-height: 100vh !important;
+    box-sizing: border-box !important;
+}
+
+.dark-mode {
+    background-color: #2e2e2e;
+    color: #e6e6e6
+}
+
+.dark-mode .stat-card {
+    background: #444;
+    color: #eee;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+.dark-mode .table-wrapper {
+    background: #444;
+    color: #eee;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
+.dark-mode table td,
+.dark-mode table th {
+    background: #444;
+    color: #eee;
+    border: none;
+}
+
+.dark-mode pre {
+    background: #444 !important;
+    color: #eee !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
+}
+
+.dark-mode .overlay-menu {
+    background: #444;
+    color: #eee;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
 .sidebar {
     background-color: #009432;
     min-height: 100vh;
     padding-top: 2rem;
     transition: all 0.3s ease;
+    position: fixed;
 }
 .sidebar a {
     color: #fff;

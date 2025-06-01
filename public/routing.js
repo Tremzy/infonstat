@@ -44,17 +44,24 @@ function routePage(ref, pushHistory = true) {
         .then(jsonData => {
             document.getElementById("app").setAttribute("data-page", jsonData[ref]);
             const currentPage = document.getElementById("app")?.dataset?.page;
+            console.log(currentPage)
             if (currentPage === "performance") {
                 setTimeout(() => {
                     if (typeof window.updateChart === "function") {
                         window.updateChart();
-                        console.log("called updatechart")
                     }
                 }, 100);
             }
             else if (currentPage === "log") {
                 if (typeof window.updateLogSelector === "function") {
-                    window.updateLogSelector()
+                    window.updateLogSelector();
+                }
+            }
+            else if (currentPage === "settings") {
+                console.log("settingspage")
+                if (typeof window.fetchSettings === "function") {
+                    window.fetchSettings();
+                    console.log("function called")
                 }
             }
         })

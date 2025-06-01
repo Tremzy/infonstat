@@ -13,11 +13,20 @@
 <body>
     <div class="container-fluid">
         <div class="row flex-nowrap">
+            <div class="col-auto col-md-3 col-xl-2 d-none d-md-block"></div>
             <nav class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 sidebar d-flex flex-column align-items-start pt-3 min-vh-100" id="nbl">
                 <a href="index.html" class="navlink">Dashboard</a>
                 <a href="perf.html" class="navlink">Performance</a>
                 <a href="log.html" class="navlink">Logs</a>
-                <a href="#" class="navlink">Settings</a>
+                <a href="settings.html" class="navlink">Settings</a>
+                <div class="mt-auto w-100 px-2 pb-3">
+                    <div class="form-check form-switch d-flex justify-content-center align-items-center w-100">
+                        <input class="form-check-input me-2" type="checkbox" id="themeSwitch" style="cursor: pointer; transform: scale(1.7);">
+                        <label class="form-check-label text-light" for="themeSwitch" style="font-size: 1.5rem; margin-left: 1em;">
+                            Dark Mode
+                        </label>
+                    </div>
+                </div>
             </nav>
             <main class="col py-3">
                 <div id="app" data-page="performance">
