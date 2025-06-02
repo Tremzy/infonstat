@@ -1,2 +1,65 @@
-# infonstat
-A web based profiler for unix-like systems (linux)
+# 🖥️ Info 'n Stat — Web-Based Performance Profiler for Unix-like Systems
+
+Info 'n Stat is a responsive, web-based performance profiling dashboard tailored for Unix-like systems — especially servers. It provides real-time system statistics, service management tools, and powerful logging utilities, all accessible from a clean, Bootstrap-powered interface.
+
+# 🚀 Features
+
+## 📊 Dashboard
+
+Overview of key system metrics
+
+Service management (Start / Stop / Restart) for tracked services
+
+Snapshot of current average CPU load and memory usage
+
+## 🔍 Performance Page
+
+Detailed system monitoring including:
+
+Live average CPU load
+
+Memory usage
+
+Real-time line chart of CPU and RAM usage over time
+
+Per-core CPU usage
+
+Clickable chart points with instant snapshots of top CPU-consuming processes at that moment
+
+## 📁 Logs
+
+View pre-defined log files
+
+Add/remove custom log sources (requires backend read permission)
+
+Real-time log streaming using Server-Sent Events (SSE)
+
+## ⚙️ Settings
+
+Configure chart update intervals
+
+Set line buffer limits for logs
+
+Define system load warning thresholds
+
+Toggle dark/light mode (available globally from the sidebar)
+
+## 🛠️ Tech Stack
+
+Frontend: HTML, CSS, JavaScript, Chart.js, Bootstrap 5
+
+Backend: Node.js + Express
+
+Realtime Streaming: Server-Sent Events (SSE)
+
+Target Systems: Linux/Unix-like operating systems (tested on server environments)
+
+## 🌙 Dark Mode
+
+A built-in dark/light mode toggle is always accessible at the bottom of the sidebar, saving your preferences across sessions.
+
+## 📎 Notes
+
+Ensure the Node.js backend has read access to any custom logs added.
+
+Intended for self-hosted environments and internal server monitoring.
