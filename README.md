@@ -2,6 +2,33 @@
 
 Info 'n Stat is a responsive, web-based performance profiling dashboard tailored for Unix-like systems — especially servers. It provides real-time system statistics, service management tools, and powerful logging utilities, all accessible from a clean, Bootstrap-powered interface.
 
+## 🧰 System Requirements
+
+Ensure the following system packages are installed on your Unix-like system:
+
+- `sysstat` — for `pidstat`
+- `nodejs` —  to run the backend
+- `npm` — to install nodejs packages
+- `express` — the backend router
+
+On Debian/Ubuntu:
+
+```bash
+sudo apt update && sudo apt install -y curl sysstat && curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt install -y nodejs && npm install express
+```
+
+On Arch:
+
+```bash
+sudo pacman -Sy --noconfirm sysstat nodejs npm && npm install express
+```
+
+On Fedora:
+
+```bash
+sudo dnf install -y sysstat nodejs npm && npm install express
+```
+
 # 🚀 Features
 
 ## 📊 Dashboard
