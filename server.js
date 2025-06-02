@@ -9,6 +9,10 @@ const {
     platform
 } = require('node:process');
 
+const semver = require('semver');
+const { version: localVersion } = require('./package.json');
+const https = require('https');
+
 const fs = require('fs');
 const { decode } = require('node:punycode');
 
@@ -284,5 +288,48 @@ app.post("/api/setsettings", (req, res) => {
     }
 })
 
+function getLatestGitHubVersion(repoOwner, repoName) {
+  return new Promise((resolve, reject) => {
+    https.get(
+      `https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`,
+      {
+        headers: { 'User-Agent': 'Node.js' }
+      },
+      (res) => {
+        let data = '';
+        res.on('data', chunk => (data += chunk));
+        res.on('end', () => {
+          if (res.statusCode === 200) {
+            try {
+              const release = JSON.parse(data);
+              resolve(release.tag_name);
+            } catch (e) {
+              reject(e);
+            }
+          } else {
+            reject(new Error(`GitHub API status: ${res.statusCode}`));
+          }
+        });
+      }
+    ).on('error', reject);
+  });
+}
+
+async function checkVersion() {
+  try {
+    const latestVersion = await getLatestGitHubVersion('Tremzy', 'infonstat');
+    if (semver.lt(localVersion, latestVersion)) {
+      console.warn(`⚠️ Your version (${localVersion}) is outdated. Latest version is ${latestVersion}. Please update!`);
+    } else {
+      console.log('You are running the latest version.');
+    }
+  } catch (err) {
+    console.error('Version check failed:', err.message);
+  }
+}
+
 const PORT = 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+    checkVersion();
+});
