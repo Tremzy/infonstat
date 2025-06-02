@@ -140,7 +140,8 @@ setInterval(() => {
         const procList = lines.map(line => {
             const parts = line.trim().split(" ").filter(p => p != "");
             const tokens = [];
-            tokens.push(parts[2], parts[9], parts[7])
+            //length = 10
+            tokens.push(parts[parts.length - 8], parts[parts.length - 1], parts[parts.length - 3])
             return tokens;
         }).sort((a, b) => parseFloat(b[2]) - parseFloat(a[2])).slice(0, 6);
 

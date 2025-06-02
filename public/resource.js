@@ -217,6 +217,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         eventSource = new EventSource(`/api/logs?path=${encodeURIComponent(logPath)}`);
         eventSource.onmessage = (event) => {
+            const isAtBottom = logOutput.scrollTop + logOutput.clientHeight >= logOutput.scrollHeight;
+            
             console.log("Received log line:", event.data);
             const decoded = event.data.replaceAll("\\n", "\n")
             logOutput.textContent += `${decoded}`;
@@ -225,7 +227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (lines.length > maxlines) {
                 logOutput.textContent = lines.slice(lines.length - maxlines).join("\n");
             }
-            logOutput.scrollTop = logOutput.scrollHeight;
+            if (isAtBottom) logOutput.scrollTop = logOutput.scrollHeight;
         }
         eventSource.onerror = (err) => {
             console.error(`Eventsource error: ${err}`);

@@ -60,8 +60,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                             //label: "Memory (MB)",
                             label: settings["chartRamScale"] == "MB" ? "Memory (MB)" : settings["chartRamScale"] == "GB" ? "Memory (GB)" : "Memory (%)",
                             data: used,
-                            borderColor: "blue",
-                            backgroundColor: "rgba(0,0,255,0.1)",
+                            borderColor: "#337aff",
+                            backgroundColor: "rgba(24, 105, 255, 0.26)",
                             yAxisID: "y",
                             pointRadius: 4,
                             pointHoverRadius: 6
