@@ -10,23 +10,24 @@ Ensure the following system packages are installed on your Unix-like system:
 - `nodejs` —  to run the backend
 - `npm` — to install nodejs packages
 - `express` — the backend router
+- `semver` — to verify local version 
 
 On Debian/Ubuntu:
 
 ```bash
-sudo apt update && sudo apt install -y curl sysstat && curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt install -y nodejs && npm install express
+sudo apt update && sudo apt install -y curl sysstat && curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt install -y nodejs && npm install express semver
 ```
 
 On Arch:
 
 ```bash
-sudo pacman -Sy --noconfirm sysstat nodejs npm && npm install express
+sudo pacman -Sy --noconfirm sysstat nodejs npm && npm install express semver
 ```
 
 On Fedora:
 
 ```bash
-sudo dnf install -y sysstat nodejs npm && npm install express
+sudo dnf install -y sysstat nodejs npm && npm install express semver
 ```
 
 # 🚀 Features
