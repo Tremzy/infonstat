@@ -5,6 +5,6 @@
     "dangerousCpuUsage": "75",
     "cautiousRamUsage": "50",
     "dangerousRamUsage": "75",
-    "chartRamScale": "MB",
+    "chartRamScale": "Percent",
     "theme": "dark"
 }

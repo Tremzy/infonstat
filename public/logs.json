@@ -1,8 +1,0 @@
-{
-    "Auth log": "/var/log/auth.log",
-    "System log": "/var/log/syslog",
-    "Kernel log": "/var/log/kern.log",
-    "Fail2ban log": "/var/log/fail2ban.log",
-    "Apache access log": "/var/log/apache2/access.log",
-    "Apache error log": "/var/log/apache2/error.log"
-}

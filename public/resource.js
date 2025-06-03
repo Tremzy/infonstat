@@ -172,6 +172,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const res = await fetch(`/api/deletelog/${encodeURIComponent(selectedLogName)}`, { method: "POST" })
         if (res.status == 200) {
             showMessageDialog("Success!", `Successfully deleted "${selectedLogName}" log`);
+            updateLogSelector();
         }
         else {
             showMessageDialog("Error", `Couldnt delete "${selectedLogName}" log`);
