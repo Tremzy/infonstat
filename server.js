@@ -190,6 +190,7 @@ app.get("/api/logs/", (req, res) => {
 
     tail.stderr.on('data', (data) => {
         console.error('Tail error:', data.toString());
+        res.write(`data: Tail error: ${data.toString()}\n\n`);
     });
 
     req.on("close", () => {

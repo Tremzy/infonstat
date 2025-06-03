@@ -217,6 +217,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         eventSource = new EventSource(`/api/logs?path=${encodeURIComponent(logPath)}`);
         eventSource.onmessage = (event) => {
+            if (event.data.startsWith("Tail error:")) {
+                if (event.data.includes("No such file")) {
+                    logOutput.textContent = "The selected log file does not exist";
+                    eventSource.close();
+                    return;
+                }
+            }
             const isAtBottom = logOutput.scrollTop + logOutput.clientHeight >= logOutput.scrollHeight;
             
             console.log("Received log line:", event.data);
