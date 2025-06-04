@@ -72,6 +72,16 @@ app.get('/api/services', (req, res) => {
     });
 });
 
+function isValidServiceName(name) {
+  const allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.";
+  for (let i = 0; i < name.length; i++) {
+    if (!allowedChars.includes(name[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 app.post('/api/service/:name/:action', (req, res) => {
     const {
         name,
@@ -80,6 +90,11 @@ app.post('/api/service/:name/:action', (req, res) => {
     if (!['start', 'stop', 'restart'].includes(action)) {
         return res.status(400).json({
             error: 'Invalid action'
+        });
+    }
+    if (!isValidServiceName(name)) {
+        return res.status(400).json({
+            error: "Invalid name"
         });
     }
     exec(`sudo systemctl ${action} ${name}`, (err) => {
