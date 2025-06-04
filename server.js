@@ -272,18 +272,30 @@ app.post("/api/deletelog/:name", (req, res) => {
 app.get("/api/getsettings/", (req, res) => {
     const settingsJson = "./public/settings.json";
 
-    if (fs.existsSync(settingsJson)) {
-        try {
-            const data = fs.readFileSync(settingsJson, "utf-8");
-            const settings = JSON.parse(data || "{}");
-            return res.json(settings);
+    if (!fs.existsSync(settingsJson)) {
+        const data = `
+        {
+            "chartUpdateDelay": "1000",
+            "logOutputBuffer": "255",
+            "cautiousCpuUsage": "50",
+            "dangerousCpuUsage": "75",
+            "cautiousRamUsage": "50",
+            "dangerousRamUsage": "75",
+            "chartRamScale": "MB",
+            "theme": "light"
         }
-        catch (err) {
-            return res.status(500).send("Failed to read settings.json");
-        }
+        `
+        fs.writeFileSync(settingsJson, JSON.stringify(JSON.parse(data), null, 4));
+        return res.json(JSON.parse(data));
     }
-    else {
-        return res.status(404).send("settings.json does not exist");
+
+    try {
+        const data = fs.readFileSync(settingsJson, "utf-8");
+        const settings = JSON.parse(data || "{}");
+        return res.json(settings);
+    }
+    catch (err) {
+        return res.status(500).send("Failed to read settings.json");
     }
 })
 
@@ -291,17 +303,12 @@ app.post("/api/setsettings", (req, res) => {
     const settingsData = req.body;
     const settingsJson = "./public/settings.json";
 
-    if (fs.existsSync(settingsJson)) {
-        fs.writeFile(settingsJson, JSON.stringify(settingsData, null, 4), (err) => {
-            if (err) {
-                return res.status(500).send("Couldnt overwrite settings.json");
-            }
-            return res.status(200).send("Successfully saved config");
-        });
-    }
-    else {
-        return res.status(404).send("settings.json does not exist");
-    }
+    fs.writeFile(settingsJson, JSON.stringify(settingsData, null, 4), (err) => {
+        if (err) {
+            return res.status(500).send("Couldnt overwrite settings.json");
+        }
+        return res.status(200).send("Successfully saved config");
+    });
 })
 
 function getLatestGitHubVersion(repoOwner, repoName) {

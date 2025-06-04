@@ -90,4 +90,4 @@ A built-in dark/light mode toggle is always accessible at the bottom of the side
 
 Ensure the Node.js backend has read access to any custom logs added.
 
-Intended for self-hosted environments and internal server monitoring.
+Intended for self-hosted environments and internal server monitoring. Please **DO NOT** expose the server port outside your network!
